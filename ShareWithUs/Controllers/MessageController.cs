@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using MySql.Data.MySqlClient;
 using ShareWithUs.Models;
+using System.Configuration;
 
 namespace ShareWithUs.Controllers
 {
@@ -18,14 +19,13 @@ namespace ShareWithUs.Controllers
             return Json(returnValue);
         }
 
-        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8, "PosterId":0, "Title":"Dit is de title van de body", "Body":"Dit is de body van de message!!"}' -H "Content-Type: application/json" -X POST http://localhost:8080/message/PostMessage -i      
+        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8, "PosterId":0, "Title":"Dit is de title van de body", "Body":"Dit is de body van de message!!"}' -H "Content-Type: application/json" -X POST http://localhost:33642/message/PostMessage -i      
         [System.Web.Mvc.HttpPost]
         public JsonResult PostMessage(Message message)
         {
             message.Id = -100;
 
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString; 
             string returnValue = "Posted";
 
             HttpCookie userCookie = Request.Cookies["token"];
@@ -34,7 +34,7 @@ namespace ShareWithUs.Controllers
             try
             {
                 conn.Open();
-                string sql = "SELECT * FROM test.ServerMember where idUser=" + message.PosterId + " and idServer=" + message.ServerId + " and userRole>0;";
+                string sql = "SELECT * FROM ServerMember where idUser=" + message.PosterId + " and idServer=" + message.ServerId + " and userRole>0;";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
 
@@ -45,14 +45,14 @@ namespace ShareWithUs.Controllers
                     conn.Close();
                     conn.Open();
 
-                    sql = "INSERT INTO test.Message (title, body, idPoster, idServer) VALUES ('" + message.Title + "', '" + message.Body + "', " + message.PosterId + ", " + message.ServerId + ");";
+                    sql = "INSERT INTO Message (title, body, idPoster, idServer) VALUES ('" + message.Title + "', '" + message.Body + "', " + message.PosterId + ", " + message.ServerId + ");";
                     cmd = new MySqlCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                     
                     conn.Close();
                     conn.Open();
 
-                    sql = "SELECT id FROM test.Message where title='" + message.Title + "' and body='" + message.Body + "' and idServer=" + message.ServerId + "  and idPoster=" + message.PosterId + ";";
+                    sql = "SELECT id FROM Message where title='" + message.Title + "' and body='" + message.Body + "' and idServer=" + message.ServerId + "  and idPoster=" + message.PosterId + ";";
                     cmd = new MySqlCommand(sql, conn);
                     rdr = cmd.ExecuteReader();
 
@@ -90,14 +90,13 @@ namespace ShareWithUs.Controllers
             return (message.Id > -1) ? Json(message) : Json(returnValue);
         }
 
-        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8, "PosterId":0, "Title":"Dit is de title van de body", "Body":"Dit is de body van de message!!"}' -H "Content-Type: application/json" -X POST http://localhost:8080/message/PostReplyMessage -i      
+        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8, "PosterId":0, "Title":"Dit is de title van de body", "Body":"Dit is de body van de message!!"}' -H "Content-Type: application/json" -X POST http://localhost:33642/message/PostReplyMessage -i      
         [System.Web.Mvc.HttpPost]
         public JsonResult PostReplyMessage(Message message)
         {
             message.Id = -100;
 
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString;
             string returnValue = "Posted";
 
             HttpCookie userCookie = Request.Cookies["token"];
@@ -106,7 +105,7 @@ namespace ShareWithUs.Controllers
             try
             {
                 conn.Open();
-                string sql = "SELECT * FROM test.ServerMember where idUser=" + message.PosterId + " and idServer=" + message.ServerId + " and userRole>0;";
+                string sql = "SELECT * FROM ServerMember where idUser=" + message.PosterId + " and idServer=" + message.ServerId + " and userRole>0;";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
 
@@ -117,14 +116,14 @@ namespace ShareWithUs.Controllers
                     //conn.Close();
                     //conn.Open();
 
-                    sql = "INSERT INTO test.Message (title, body, idPoster, idServer, idParentMessage) VALUES ('" + message.Title + "', '" + message.Body + "', " + message.PosterId + ", " + message.ServerId + ", " + message.ParentMessageId + ");";
+                    sql = "INSERT INTO Message (title, body, idPoster, idServer, idParentMessage) VALUES ('" + message.Title + "', '" + message.Body + "', " + message.PosterId + ", " + message.ServerId + ", " + message.ParentMessageId + ");";
                     cmd = new MySqlCommand(sql, conn);
                     cmd.ExecuteNonQuery();
 
                     //conn.Close();
                     //conn.Open();
 
-                    sql = "SELECT id FROM test.Message where title='" + message.Title + 
+                    sql = "SELECT id FROM Message where title='" + message.Title + 
                                                                                "' and body='" + message.Body + 
                                                                                "' and idServer=" + message.ServerId + 
                                                                                "  and idPoster=" + message.PosterId + 
@@ -167,14 +166,13 @@ namespace ShareWithUs.Controllers
             return (message.Id > -1) ? Json(message) : Json(returnValue);
         }
 
-        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8}' -H "Content-Type: application/json" -X POST http://localhost:8080/message/GetMessages -i      
+        //curl --cookie "token=ASFSFASASFSF0ASFDGQWAFSGEWQAFSDGEW" -d '{"ServerId":8}' -H "Content-Type: application/json" -X POST http://localhost:33642/message/GetMessages -i      
         [System.Web.Mvc.HttpPost]
         public JsonResult GetMessages(Message message)
         {
-           // message.Id = -100;
+            // message.Id = -100;
 
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString;
             string returnValue = "Posted";
 
             HttpCookie userCookie = Request.Cookies["token"];
@@ -185,7 +183,7 @@ namespace ShareWithUs.Controllers
             try
             {
                 conn.Open();
-                string sql = "SELECT * FROM test.Message where idServer=" + message.ServerId + ";";
+                string sql = "SELECT * FROM Message where idServer=" + message.ServerId + ";";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
 

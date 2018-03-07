@@ -5,12 +5,13 @@ using System.Web;
 using System.Web.Mvc;
 using MySql.Data.MySqlClient;
 using ShareWithUs.Models;
+using System.Configuration;
 
 namespace ShareWithUs.Controllers
 {
     public class UserController : Controller
     {
-        //curl -H "Content-Type: application/json" -X POST http://localhost:8080/user/ -i 
+        //curl -H "Content-Type: application/json" -X POST http://localhost:33642/user/ -i 
         [System.Web.Mvc.HttpGet]
         public JsonResult Index()
         {
@@ -19,15 +20,14 @@ namespace ShareWithUs.Controllers
 
         private List<User> getUsers()
         {
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString;
             MySqlConnection conn = new MySqlConnection(connStr);
             List<User> users = new List<Models.User>();
             try
             {
                 conn.Open();
 
-                string sql = "SELECT * FROM test.User";
+                string sql = "SELECT * FROM User";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
 
@@ -50,12 +50,11 @@ namespace ShareWithUs.Controllers
             return users;
         }
 
-        //curl -d '{"Name":"Piet", "Password":"Dit_Is_Een_test"}' -H "Content-Type: application/json" -X POST http://localhost:8080/user/CreateAccount -i      
+        //curl -d '{"Name":"Piet", "Password":"Dit_Is_Een_test"}' -H "Content-Type: application/json" -X POST http://localhost:33642/user/CreateAccount -i      
         [System.Web.Mvc.HttpPost]
         public JsonResult CreateAccount(User user)
         {
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString;
             string returnValue = "welcome";
 
             MySqlConnection conn = new MySqlConnection(connStr);
@@ -63,14 +62,14 @@ namespace ShareWithUs.Controllers
             {
                 conn.Open();
 
-                string sql = "SELECT * FROM test.User where name like '" + user.Name + "'";
+                string sql = "SELECT * FROM User where name like '" + user.Name + "'";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
                 if (!rdr.HasRows)
                 {
                     conn.Close();
                     conn.Open();
-                    sql = "INSERT test.User (name, password) VALUES ('" + user.Name + "', '" + user.Password + "')";
+                    sql = "INSERT User (name, password) VALUES ('" + user.Name + "', '" + user.Password + "')";
                     cmd = new MySqlCommand(sql, conn);
                     cmd.ExecuteNonQuery();
 
@@ -93,16 +92,15 @@ namespace ShareWithUs.Controllers
             return Json(returnValue);
         }
 
-        //curl -d '{"Name":"Piet", "Password":"Dit_Is_Een_test"}' -H "Content-Type: application/json" -X POST http://localhost:8080/user/LogIn -i 
-        //curl -d '{"Token":"<insert token here>"}' -H "Content-Type: application/json" -X POST http://localhost:8080/user/LogIn -i 
+        //curl -d '{"Name":"Piet", "Password":"Dit_Is_Een_test"}' -H "Content-Type: application/json" -X POST http://localhost:33642/user/LogIn -i 
+        //curl -d '{"Token":"<insert token here>"}' -H "Content-Type: application/json" -X POST http://localhost:33642/user/LogIn -i 
         [System.Web.Mvc.HttpPost]
         public JsonResult LogIn(User user)
         {
             User u = new User();
             u.Id = -1;
 
-            string connStr = "server=localhost;user=root;database=test;" +
-                "port=3306;password=Dit_Is_Voor_De_HvA01+-";
+            string connStr = ConfigurationManager.ConnectionStrings["MySQLConn"].ConnectionString;
             string returnValue = "welcome";
 
             MySqlConnection conn = new MySqlConnection(connStr);
@@ -112,7 +110,7 @@ namespace ShareWithUs.Controllers
 
                 if (user.Token.CompareTo("") != 0)
                 {
-                    string sql = "SELECT idUser FROM test.Token where token like '" + user.Token + "'";
+                    string sql = "SELECT idUser FROM Token where token like '" + user.Token + "'";
                     MySqlCommand cmd = new MySqlCommand(sql, conn);
                     MySqlDataReader rdr = cmd.ExecuteReader();
                     if (rdr.HasRows)
@@ -132,7 +130,7 @@ namespace ShareWithUs.Controllers
                 }
                 else
                 {
-                    string sql = "SELECT * FROM test.User where name like '" + user.Name + "' and password like '" + user.Password + "'";
+                    string sql = "SELECT * FROM User where name like '" + user.Name + "' and password like '" + user.Password + "'";
                     MySqlCommand cmd = new MySqlCommand(sql, conn);
                     MySqlDataReader rdr = cmd.ExecuteReader();
                     if (rdr.HasRows)
@@ -148,7 +146,7 @@ namespace ShareWithUs.Controllers
 
                         conn.Close();
                         conn.Open();
-                        sql = "INSERT test.Token (token, idUser, lastLogin) VALUES ('" + u.Token + "', '" + u.Id + "', now())";
+                        sql = "INSERT Token (token, idUser, lastLogin) VALUES ('" + u.Token + "', '" + u.Id + "', now())";
                         cmd = new MySqlCommand(sql, conn);
                         cmd.ExecuteNonQuery();
 
